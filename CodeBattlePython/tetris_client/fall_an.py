@@ -12,11 +12,12 @@ def table_after_fall(figure_coors: Element, current_board: list) -> list:
             collision_points.append(Point(pnt.get_x(), pnt.get_y()))
     delta = 1
     while collision == False:
-        shifted_points = [Point(pnt.get_x, pnt.get_y()-delta) for pnt in collision_points]
+        shifted_points = [Point(pnt.get_x(), pnt.get_y()-delta) for pnt in collision_points]
         for pnt in shifted_points:
             if (pnt.get_x(), pnt.get_y()) in current_board:
                 collision = True
-                new_board.append((Point(pnt.get_x(), pnt.get_y()-delta+1 for pnt in figure_coors)))
+                for pnt in figure_coors:
+                    new_board.append((pnt.get_x(), pnt.get_y()-delta+1))
             else:
                 delta += 1
     return new_board

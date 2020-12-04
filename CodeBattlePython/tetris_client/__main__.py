@@ -11,6 +11,8 @@ from tetris_client import Board
 from tetris_client import Element
 from tetris_client import Point
 
+from fall_an import table_after_fall
+
 logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
 
 k = 1
@@ -27,7 +29,21 @@ def get_first_empty_for_I(gcb: Board, y) -> int:
         x +=1
     return x    
 
+def board_to_list(gcb: Board) -> list:
+    list_of_dot = []
+    for y in range(17, -1, -1):
+        is_row_empty = True
+        for x in range(0, 18):
+            if gcb.get_element_at(Point(x, y)).get_char() != ".":
+                list_of_dot.append((x, y))
+                is_row_empty = False
+        if is_row_empty:
+            break
+    return list_of_dot
+
+
 def turn(gcb: Board) -> TetrisAction:
+    print(table_after_fall(gcb.predict_figure_points_after_rotation(), board_to_list(gcb)))
     action = [TetrisAction.LEFT] * 10
     y = 17
     x = 0
