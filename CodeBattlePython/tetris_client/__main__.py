@@ -10,6 +10,7 @@ from typing import Text
 import logging
 import random
 from tetris_client import GameClient
+from datetime import datetime
 
 from fall_an import table_after_fall
 
@@ -45,8 +46,8 @@ def board_to_list(gcb: Board) -> list:
             break
     return list_of_dot
 
-
 def turn(gcb: Board) -> TetrisAction:
+    start_time = datetime.now()
     table_after_fall([(temp._x, 17 - temp._y) for temp in gcb.predict_figure_points_after_rotation()], board_to_list(gcb))
     action = [TetrisAction.LEFT] * 10
     y = 17
@@ -70,6 +71,8 @@ def turn(gcb: Board) -> TetrisAction:
 
     action.extend([TetrisAction.RIGHT]*x)
     action.append(TetrisAction.DOWN)
+    end_time = datetime.now()
+    print((end_time - start_time).total_seconds() * 1000)
     return action
 
 
