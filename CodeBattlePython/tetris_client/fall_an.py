@@ -31,7 +31,7 @@ def table_after_fall(figure_coors: list, current_board: list) -> list:
 
     return new_board
 
-def find_empty(current_board: list, current_bord_state: Board) -> int:
+def find_empty(current_board: list) -> int:
     if not current_board:
         return 0
     empty_counter = 0
@@ -40,7 +40,7 @@ def find_empty(current_board: list, current_bord_state: Board) -> int:
         for width in range(18):
             if (width, height) not in current_board:
                 for pnts in range(height, 18, 1):
-                    if current_bord_state.get_element_at(Point(width, pnts)).get_char() != ".":
+                    if (width, pnts) in current_board:
                         empty_counter += 1
                         break
     return empty_counter
