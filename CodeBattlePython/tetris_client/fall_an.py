@@ -2,35 +2,33 @@ from functools import reduce
 
 from tetris_client import Board, Element, Point
 
+from functools import reduce
 
-def table_after_fall(figure_coors: Element, current_board: list) -> list:
-    print(current_board)
-    if not current_board:
-        return current_board
+
+def table_after_fall(figure_coors: list, current_board: list) -> list:
     collision = False
     collision_points = []
     new_board = current_board.copy()
     for pnt in figure_coors:
-        if Point(pnt.get_x(), pnt.get_y()-1) in figure_coors:
+        if (pnt[0], pnt[1]+1) in figure_coors:
             continue
         else:
-            collision_points.append(Point(pnt.get_x(), pnt.get_y()))
+            collision_points.append((pnt[0], pnt[1]))
     delta = 1
+    lowest_point = max(figure_coors, key=lambda t: t[1])[1]
     while collision == False:
-        shifted_points = [Point(pnt.get_x(), pnt.get_y()+delta) for pnt in collision_points]
-        #print([i.get_y() for i in shifted_points])
+        shifted_points = [(pnt[0], pnt[1]+delta) for pnt in collision_points]
         for pnt in shifted_points:
-            if (pnt.get_x(), pnt.get_y()) in current_board:
-                print(pnt.get_x(), pnt.get_y())
+            if (pnt[0], pnt[1]) in current_board:
                 collision = True
                 for pnt_temp in figure_coors:
-                    new_board.append((pnt_temp.get_x(), pnt_temp.get_y()+delta-1))
-            else:
-                break
+                    new_board.append( (pnt_temp[0], pnt_temp[1]+delta-1))
         delta += 1
-        if delta >=16:
-            delta = 1
+        if lowest_point + delta > 17:
+            for pnt_temp in figure_coors:
+                new_board.append( (pnt_temp[0], pnt_temp[1]+delta-1))
             break
+
     return new_board
 
 def find_empty(current_board: list, current_bord_state: Board) -> int:
