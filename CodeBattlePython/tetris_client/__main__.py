@@ -12,7 +12,8 @@ import random
 from tetris_client import GameClient
 from datetime import datetime
 
-from fall_an import table_after_fall
+from fall_an import table_after_fall, find_empty
+
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
@@ -44,38 +45,47 @@ def board_to_list(gcb: Board) -> list:
                 is_row_empty = False
         if is_row_empty:
             break
+    if (8,0) in list_of_dot:
+        list_of_dot.remove((8,0))
+    
+    if (8,1) in list_of_dot:
+        list_of_dot.remove((8,1))
+    
+    if (9,0) in list_of_dot:
+        list_of_dot.remove((9,0))
+    
+    if (9,1) in list_of_dot:
+        list_of_dot.remove((9,1))
+
     return list_of_dot
 
 def find_best_action(gcb: Board):
-    y=gcb.get_current_element
-    for x in range(1, 17):
+    figure = gcb.get_current_element()
+    y = gcb.get_current_figure_point().get_y()
+    best_score = 100000
+    best_x=0
+    best_rotate=0
+    for x in range(0, 18):
         for rotate in range(0, 4):
-            table_after_fall([(temp._x, 17 - temp._y) for temp in gcb.predict_figure_points_after_rotation(x, y, figure, rotate)], board_to_list(gcb))
+            board = table_after_fall([(temp._x, 17 - temp._y) for temp in gcb.predict_figure_points_after_rotation(x, y, figure, rotate)], board_to_list(gcb))
+            min_y = min([y_coord[1] for y_coord in board])
+            score = (find_empty(board) + 1) * (18 - min_y)
+            if score < best_score:
+                best_score = score
+                best_x = x
+                best_rotate = rotate
+    print(best_score)
+    return best_x, best_rotate
+
 
 def turn(gcb: Board) -> TetrisAction:
     start_time = datetime.now()
-    table_after_fall([(temp._x, 17 - temp._y) for temp in gcb.predict_figure_points_after_rotation()], board_to_list(gcb))
-    action = [TetrisAction.LEFT] * 10
-    y = 17
-    x = 0
-    global k
-    if gcb.get_current_figure_type() == "I":
-        x = 18
-        while x == 18:
-            x = get_first_empty_for_I(gcb, y)
-            y = y - 1
-    elif gcb.get_current_figure_type() == "O":
-        x = 17
-        while x == 17:
-            x = get_first_empty_for_O(gcb, y)
-            y = y - 1
-    elif gcb.get_current_figure_type() == "J":
-        if k % 2 == 0:
-            action.append(TetrisAction.ACT_2)
-        action.append(TetrisAction.LEFT)
-        k += 1
-
-    action.extend([TetrisAction.RIGHT]*x)
+    x, rotate = find_best_action(gcb)
+    #print("empty: ", find_empty(board_to_list(gcb)))
+    action = []
+    action.extend([TetrisAction.ACT]*rotate)
+    action.extend([TetrisAction.LEFT] * 10)
+    action.extend([TetrisAction.RIGHT] * x)
     action.append(TetrisAction.DOWN)
     end_time = datetime.now()
     print((end_time - start_time).total_seconds() * 1000)

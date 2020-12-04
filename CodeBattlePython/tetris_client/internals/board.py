@@ -94,12 +94,12 @@ class Board:
         # be aware: this method is experemental and can cause issues in edge cases
         # метод возвращает все точки Фигуры при rotation (1 == 90 градусам)
         # подробнее про rotation в методе get_shift_after_rotation
-        if not x or not y or not figure:
+        if (x is None) or (y is None) or (not figure):
             anchor: Point = self.get_current_figure_point()
             figure: Element = self.get_current_element()
         else:
             anchor: Point = Point(x, y)
-            figure: Element = prepare_element(type_)
+            figure: Element = prepare_element(figure)
 
         return figure.get_all_coords_after_rotation(anchor, rotation)
 

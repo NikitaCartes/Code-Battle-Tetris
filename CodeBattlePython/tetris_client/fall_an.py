@@ -35,11 +35,14 @@ def find_empty(current_board: list) -> int:
     if not current_board:
         return 0
     empty_counter = 0
-    min_y = min([y_coord[1] for y_coord in current_board])
-    for height in range(17-min_y):
-        for width in range(18):
+    for width in range(18):
+        list_of_y = [y_coord[1] for y_coord in current_board if y_coord[0] == width]
+        min_y = 18
+        if list_of_y:
+            min_y = min(list_of_y)
+        for height in range(min_y, 18):
             if (width, height) not in current_board:
-                for pnts in range(height, 18, 1):
+                for pnts in range(height, -1, -1):
                     if (width, pnts) in current_board:
                         empty_counter += 1
                         break
