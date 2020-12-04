@@ -46,6 +46,12 @@ def board_to_list(gcb: Board) -> list:
             break
     return list_of_dot
 
+def find_best_action(gcb: Board):
+    y=gcb.get_current_element
+    for x in range(1, 17):
+        for rotate in range(0, 4):
+            table_after_fall([(temp._x, 17 - temp._y) for temp in gcb.predict_figure_points_after_rotation(x, y, figure, rotate)], board_to_list(gcb))
+
 def turn(gcb: Board) -> TetrisAction:
     start_time = datetime.now()
     table_after_fall([(temp._x, 17 - temp._y) for temp in gcb.predict_figure_points_after_rotation()], board_to_list(gcb))
