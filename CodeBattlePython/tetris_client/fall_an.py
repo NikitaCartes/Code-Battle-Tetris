@@ -34,7 +34,7 @@ def find_empty(current_board: list, current_bord_state: Board) -> int:
         return 0
     empty_counter = 0
     min_y = min([y_coord[1] for y_coord in current_board])
-    for height in range(17-max_y):
+    for height in range(17-min_y):
         for width in range(18):
             if (width, height) not in current_board:
                 for pnts in range(height, 18, 1):
