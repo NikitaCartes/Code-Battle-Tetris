@@ -15,25 +15,7 @@ from datetime import datetime
 from fall_an import table_after_fall, find_empty
 
 
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
-
-k = 1
-
-
-def get_first_empty_for_O(gcb: Board, y) -> int:
-    x = 0
-    while (x < 17) and ((gcb.get_element_at(Point(x, y)).get_char() != ".") or (gcb.get_element_at(Point(x+1, y)).get_char() != ".")):
-        x += 1
-    return x
-
-
-def get_first_empty_for_I(gcb: Board, y) -> int:
-    x = 0
-    while (x < 18) and (gcb.get_element_at(Point(x, y)).get_char() != "."):
-        x += 1
-    return x
-
+#logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
 
 def board_to_list(gcb: Board) -> list:
     list_of_dot = []
@@ -65,11 +47,17 @@ def find_best_action(gcb: Board):
     best_score = 100000
     best_x=0
     best_rotate=0
-    for x in range(0, 18):
+    min_x = 0 
+    max_x = 17
+    if gcb.get_current_element().get_char() == "I":
+        max_x = 18
+    if gcb.get_current_element().get_char() == "J":
+        max_x = 18
+    for x in range(min_x, max_x):
         for rotate in range(0, 4):
             board = table_after_fall([(temp._x, 17 - temp._y) for temp in gcb.predict_figure_points_after_rotation(x, y, figure, rotate)], board_to_list(gcb))
             min_y = min([y_coord[1] for y_coord in board])
-            score = (find_empty(board) + 1) * (18 - min_y)
+            score = (find_empty(board) + 1) + (18 - min_y)
             if score < best_score:
                 best_score = score
                 best_x = x
@@ -83,9 +71,11 @@ def turn(gcb: Board) -> TetrisAction:
     x, rotate = find_best_action(gcb)
     #print("empty: ", find_empty(board_to_list(gcb)))
     action = []
-    action.extend([TetrisAction.ACT]*rotate)
     action.extend([TetrisAction.LEFT] * 10)
     action.extend([TetrisAction.RIGHT] * x)
+    action.extend([TetrisAction.ACT]*rotate)
+    if gcb.get_current_element().get_char() == "J":
+        action.append(TetrisAction.LEFT)
     action.append(TetrisAction.DOWN)
     end_time = datetime.now()
     print((end_time - start_time).total_seconds() * 1000)
