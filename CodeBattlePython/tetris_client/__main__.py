@@ -141,7 +141,7 @@ def find_best_action(gcb: Board):
             #    temp = full_lines * 4
             #else:
             #    temp = full_lines * (-4)
-            score = (find_empty(board) + 1)*2 + (18 - min_y - full_lines*6)
+            score = (find_empty(board) + 20)*15 + (18 - min_y - full_lines*3)
             if score < best_score:
                 best_score = score
                 best_delta = delta
@@ -186,5 +186,5 @@ def main(uri: Text):
 
 
 if __name__ == "__main__":
-    uri = "http://codebattle2020.westeurope.cloudapp.azure.com/codenjoy-contest/board/player/f2ifat9xda9sy6qaktq2?code=3385983798808468512&gameName=tetriss"
+    uri = "http://codebattle2020.westeurope.cloudapp.azure.com/codenjoy-contest/board/player/ughx7b2ws78dix93nqvf?code=940325171272210979&gameName=tetris#"
     main(uri)
