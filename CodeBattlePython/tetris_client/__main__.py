@@ -41,44 +41,116 @@ def board_to_list(gcb: Board) -> list:
 
     return list_of_dot
 
+def count_full_lines(gcb: Board) -> int:
+    full_lines = 0
+    for y in range(17, -1, -1):
+        is_row_empty = True
+        is_row_has_empty = False
+        for x in range(0, 18):
+            if gcb.get_element_at(Point(x, y)).get_char() != ".":
+                is_row_empty = False
+            else:
+                is_row_has_empty = True
+                break
+        if not is_row_has_empty:
+            full_lines += 1
+        if is_row_empty:
+            break
+    return full_lines
+
+def get_min_max_x(figure_coors: list, current_board: list):
+    collision = False
+    collision_points = []
+    new_board = current_board.copy()
+    for pnt in figure_coors:
+        if (pnt[0]+1, pnt[1]) in figure_coors:
+            continue
+        else:
+            collision_points.append((pnt[0], pnt[1]))
+    delta = 1
+    lowest_point = max(figure_coors, key=lambda t: t[0])[0]
+    while collision == False:
+        shifted_points = [(pnt[0]+delta, pnt[1]) for pnt in collision_points]
+        for pnt in shifted_points:
+            if (pnt[0], pnt[1]) in current_board:
+                collision = True
+                for pnt_temp in figure_coors:
+                    new_board.append( (pnt_temp[0]+delta-1, pnt_temp[1]))
+        delta += 1
+        if lowest_point + delta > 17:
+            for pnt_temp in figure_coors:
+                new_board.append( (pnt_temp[0]+delta-1, pnt_temp[1]))
+            break
+    max_delta = delta
+
+    collision = False
+    collision_points = []
+    new_board = current_board.copy()
+    for pnt in figure_coors:
+        if (pnt[0]-1, pnt[1]) in figure_coors:
+            continue
+        else:
+            collision_points.append((pnt[0], pnt[1]))
+    delta = 1
+    lowest_point = min(figure_coors, key=lambda t: t[0])[0]
+    while collision == False:
+        shifted_points = [(pnt[0]-delta, pnt[1]) for pnt in collision_points]
+        for pnt in shifted_points:
+            if (pnt[0], pnt[1]) in current_board:
+                collision = True
+                for pnt_temp in figure_coors:
+                    new_board.append( (pnt_temp[0]-delta+1, pnt_temp[1]))
+        delta += 1
+        if lowest_point - delta < 1:
+            for pnt_temp in figure_coors:
+                new_board.append( (pnt_temp[0]-delta+1, pnt_temp[1]))
+            break
+    min_delta = -delta
+
+    return min_delta, max_delta
+    
+
 def find_best_action(gcb: Board):
-    figure = gcb.get_current_element()
-    y = gcb.get_current_figure_point().get_y()
+    board_list = board_to_list(gcb)
     best_score = 100000
-    best_x=0
-    best_rotate=0
-    min_x = 0 
-    max_x = 17
-    if gcb.get_current_element().get_char() == "I":
-        max_x = 18
-    if gcb.get_current_element().get_char() == "J":
-        max_x = 18
-    for x in range(min_x, max_x):
-        for rotate in range(0, 4):
-            board = table_after_fall([(temp._x, 17 - temp._y) for temp in gcb.predict_figure_points_after_rotation(x, y, figure, rotate)], board_to_list(gcb))
+    best_delta = 0
+    best_rotate = 0
+    for rotate in range(0, 4):
+        figure = [(temp._x, 17 - temp._y) for temp in gcb.predict_figure_points_after_rotation(rotation=rotate)]
+        min_delta, max_delta = get_min_max_x(figure, board_list)
+        for delta in range(min_delta, max_delta):
+            board = table_after_fall([(temp[0]+delta, temp[1]) for temp in figure], board_list)
             min_y = min([y_coord[1] for y_coord in board])
-            score = (find_empty(board) + 1) + (18 - min_y)
+            full_lines = count_full_lines(gcb)
+            #temp = 0
+            #if full_lines < 3:
+            #    temp = full_lines * 4
+            #else:
+            #    temp = full_lines * (-4)
+            score = (find_empty(board) + 1) + (18 - min_y - full_lines*4)
             if score < best_score:
                 best_score = score
-                best_x = x
+                best_delta = delta
                 best_rotate = rotate
-    print(best_score)
-    return best_x, best_rotate
+    print("Score: ", best_score)
+    return best_delta, best_rotate
 
 
 def turn(gcb: Board) -> TetrisAction:
     start_time = datetime.now()
-    x, rotate = find_best_action(gcb)
+    delta, rotate = find_best_action(gcb)
     #print("empty: ", find_empty(board_to_list(gcb)))
-    action = []
-    action.extend([TetrisAction.LEFT] * 10)
-    action.extend([TetrisAction.RIGHT] * x)
-    action.extend([TetrisAction.ACT]*rotate)
-    if gcb.get_current_element().get_char() == "J":
-        action.append(TetrisAction.LEFT)
+    
+    action = [TetrisAction.ACT]*rotate
+    
+    if delta < 0:
+        action.extend([TetrisAction.LEFT] * (-delta))
+    else:
+        action.extend([TetrisAction.RIGHT] * delta)
     action.append(TetrisAction.DOWN)
     end_time = datetime.now()
-    print((end_time - start_time).total_seconds() * 1000)
+    print("Time: ", (end_time - start_time).total_seconds() * 1000)
+    print("===========================================================")
     return action
 
 
