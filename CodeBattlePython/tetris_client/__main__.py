@@ -41,13 +41,13 @@ def board_to_list(gcb: Board) -> list:
 
     return list_of_dot
 
-def count_full_lines(gcb: Board) -> int:
+def count_full_lines(current_board: list) -> int:
     full_lines = 0
     for y in range(17, -1, -1):
         is_row_empty = True
         is_row_has_empty = False
         for x in range(0, 18):
-            if gcb.get_element_at(Point(x, y)).get_char() != ".":
+            if (x, y) in current_board:
                 is_row_empty = False
             else:
                 is_row_has_empty = True
@@ -57,6 +57,18 @@ def count_full_lines(gcb: Board) -> int:
         if is_row_empty:
             break
     return full_lines
+
+def count_fullness(current_board: list) -> int:
+    fullness = 1
+    for y in range(17, -1, -1):
+        is_row_empty = True
+        for x in range(0, 18):
+            if (x, y) in current_board:
+                fullness += 1*pow(20, y)
+                is_row_empty = False
+        if is_row_empty:
+            break
+    return fullness
 
 def get_min_max_x(figure_coors: list, current_board: list):
     collision = False
@@ -115,24 +127,35 @@ def find_best_action(gcb: Board):
     best_score = 100000
     best_delta = 0
     best_rotate = 0
+    best_fullness = 0
+    min_delta, max_delta = (0, 0)
     for rotate in range(0, 4):
         figure = [(temp._x, 17 - temp._y) for temp in gcb.predict_figure_points_after_rotation(rotation=rotate)]
         min_delta, max_delta = get_min_max_x(figure, board_list)
         for delta in range(min_delta, max_delta):
             board = table_after_fall([(temp[0]+delta, temp[1]) for temp in figure], board_list)
             min_y = min([y_coord[1] for y_coord in board])
-            full_lines = count_full_lines(gcb)
+            full_lines = count_full_lines(board)
             #temp = 0
             #if full_lines < 3:
             #    temp = full_lines * 4
             #else:
             #    temp = full_lines * (-4)
-            score = (find_empty(board) + 1) + (18 - min_y - full_lines*4)
+            score = (find_empty(board) + 1)*2 + (18 - min_y - full_lines*6)
             if score < best_score:
                 best_score = score
                 best_delta = delta
                 best_rotate = rotate
+            elif score == best_score:
+                fullness = count_fullness(board)
+                if fullness >= best_fullness:     
+                    best_score = score
+                    best_delta = delta
+                    best_rotate = rotate
+                    best_fullness = fullness
     print("Score: ", best_score)
+    print("Fullness: ", best_fullness)
+    print(min_delta, max_delta)
     return best_delta, best_rotate
 
 
